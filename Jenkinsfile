@@ -216,17 +216,20 @@ pipeline {
                                     echo ">>>>> Enter ImageStream Check <<<<<"
                                     echo ">>>>> importImage: ${importImage} reCheck: ${reCheck} <<<<<"
 
-                                    if (importImage) {
-                                        reCheck = true
-                                    }
-                                    for (item in it.object().status.tags) {
-                                        if (item.containsKey('conditions')) {
-                                            importImage = true
-                                            reCheck = false
-                                            openshift.raw("import-image ${it.name()}")
-                                            sleep(30)
-                                        }
-                                    }
+                                    // if (importImage) {
+                                    //     reCheck = true
+                                    // }
+                                    // for (item in it.object().status.tags) {
+                                    //     if (item.containsKey('conditions')) {
+                                    //         importImage = true
+                                    //         reCheck = false
+                                    //         openshift.raw("import-image ${it.name()}")
+                                    //         sleep(30)
+                                    //     }
+                                    // }
+
+                                    importImage = true
+                                    reCheck = true
                                     echo ">>>>> Exit ImageStream Check <<<<<"
                                     echo ">>>>> importImage: ${importImage} reCheck: ${reCheck} <<<<<"
 
