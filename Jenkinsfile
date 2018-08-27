@@ -292,80 +292,80 @@ pipeline {
          * This is generally duplicated from the Dev - OpenShift Template
          * See inline documentation above.
          */
-        stage('Stage - OpenShift Template') {
-            environment {
-                STAGE = credentials("${params.STAGE_SECRET_NAME}")
-            }
-            steps {
-                script {
-                    openshift.withCluster(params.STAGE_URI, env.STAGE_PSW) {
-                        openshift.withProject(params.STAGE_PROJECT) {
-                            def openShiftApplyArgs = ""
-                            if (findFileChanges(params.APP_TEMPLATE_PATH)
-                                    || !openshift.selector("template/${params.APP_DC_NAME}").exists()) {
-                                openshift.apply(readFile(params.APP_TEMPLATE_PATH))
-                            } else {
-                                openShiftApplyArgs = "--dry-run"
-                                openshift.tag("--source=docker",
-                                        "${imageName}",
-                                        "${openshift.project()}/${params.IMAGE_STREAM_NAME}:${params.IMAGE_STREAM_LATEST_TAG}")
-                            }
+        // stage('Stage - OpenShift Template') {
+        //     environment {
+        //         STAGE = credentials("${params.STAGE_SECRET_NAME}")
+        //     }
+        //     steps {
+        //         script {
+        //             openshift.withCluster(params.STAGE_URI, env.STAGE_PSW) {
+        //                 openshift.withProject(params.STAGE_PROJECT) {
+        //                     def openShiftApplyArgs = ""
+        //                     if (findFileChanges(params.APP_TEMPLATE_PATH)
+        //                             || !openshift.selector("template/${params.APP_DC_NAME}").exists()) {
+        //                         openshift.apply(readFile(params.APP_TEMPLATE_PATH))
+        //                     } else {
+        //                         openShiftApplyArgs = "--dry-run"
+        //                         openshift.tag("--source=docker",
+        //                                 "${imageName}",
+        //                                 "${openshift.project()}/${params.IMAGE_STREAM_NAME}:${params.IMAGE_STREAM_LATEST_TAG}")
+        //                     }
 
-                            def model = openshift.process(params.IMAGE_STREAM_NAME,
-                                    "-l app=${params.APP_DC_NAME}",
-                                    "-p",
-                                    "TAG=${env.TAG}",
-                                    "IMAGESTREAM_TAG=${params.IMAGE_STREAM_LATEST_TAG}",
-                                    "REGISTRY_PROJECT=${params.REGISTRY_PROJECT}",
-                                    "REGISTRY=${params.REGISTRY_URI}")
+        //                     def model = openshift.process(params.IMAGE_STREAM_NAME,
+        //                             "-l app=${params.APP_DC_NAME}",
+        //                             "-p",
+        //                             "TAG=${env.TAG}",
+        //                             "IMAGESTREAM_TAG=${params.IMAGE_STREAM_LATEST_TAG}",
+        //                             "REGISTRY_PROJECT=${params.REGISTRY_PROJECT}",
+        //                             "REGISTRY=${params.REGISTRY_URI}")
 
-                            if (openshift.selector("secret/${params.APP_DC_NAME}").exists()) {
-                                def count = 0
-                                for (item in model) {
-                                    if (item.kind == 'Secret') {
-                                        model.remove(count)
-                                    }
-                                    count++
-                                }
-                            }
-                            createdObjects = openshift.apply(model, openShiftApplyArgs)
+        //                     if (openshift.selector("secret/${params.APP_DC_NAME}").exists()) {
+        //                         def count = 0
+        //                         for (item in model) {
+        //                             if (item.kind == 'Secret') {
+        //                                 model.remove(count)
+        //                             }
+        //                             count++
+        //                         }
+        //                     }
+        //                     createdObjects = openshift.apply(model, openShiftApplyArgs)
 
-                            /* The stage environment does not need OpenShift BuildConfig objects */
-                            if (createdObjects.narrow('bc').exists()) {
-                                createdObjects.narrow('bc').delete()
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                     /* The stage environment does not need OpenShift BuildConfig objects */
+        //                     if (createdObjects.narrow('bc').exists()) {
+        //                         createdObjects.narrow('bc').delete()
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         /** Stage - Rollout
          *
          * This is generally duplicated from the Dev - Rollout
          * See inline documentation above.
          */
-        stage('Stage - Rollout') {
-            environment {
-                STAGE = credentials("${params.STAGE_SECRET_NAME}")
-            }
-            steps {
-                script {
-                    openshift.withCluster(params.STAGE_URI, env.STAGE_PSW) {
-                        openshift.withProject(params.STAGE_PROJECT) {
-                            def result = null
-                            deploymentConfig = openshift.selector("dc", params.APP_DC_NAME)
-                            deploymentConfig.rollout().latest()
-                            timeout(10) {
-                                result = deploymentConfig.rollout().status("-w")
-                            }
-                            if (result.status != 0) {
-                                error(result.err)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Stage - Rollout') {
+        //     environment {
+        //         STAGE = credentials("${params.STAGE_SECRET_NAME}")
+        //     }
+        //     steps {
+        //         script {
+        //             openshift.withCluster(params.STAGE_URI, env.STAGE_PSW) {
+        //                 openshift.withProject(params.STAGE_PROJECT) {
+        //                     def result = null
+        //                     deploymentConfig = openshift.selector("dc", params.APP_DC_NAME)
+        //                     deploymentConfig.rollout().latest()
+        //                     timeout(10) {
+        //                         result = deploymentConfig.rollout().status("-w")
+        //                     }
+        //                     if (result.status != 0) {
+        //                         error(result.err)
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
 
